@@ -1,11 +1,11 @@
 <div class="auth-card">
     <div class="auth-brand">
         <span class="brand-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-9 0 12-4 16-9 16z"/><path d="M4 21c3-6 6-9 11-11"/></svg>
+            <img src="<?= url('assets/img/logo.png') ?>" alt="<?= e(config('app_name')) ?>" class="logo">
         </span>
         <div>
             <div class="brand-name"><?= e(config('app_name')) ?></div>
-            <div class="brand-sub">Municipal Agriculture Office</div>
+            <div class="brand-sub">Information Management System</div>
         </div>
     </div>
 

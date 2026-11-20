@@ -49,7 +49,7 @@
   --bs-body-font-size: 13px;
   --bs-body-line-height: 1.45;
   --bs-body-color: var(--c-ink);
-  --bs-body-bg: var(--c-page);
+  --bs-body-bg: var(--c-surface);
   --bs-border-color: var(--c-border);
   --bs-border-radius: var(--r-sm);
   --bs-secondary-color: var(--c-muted);
@@ -64,7 +64,7 @@
 }
 
 /* ---------- 2. BASE ---------- */
-body { font-family: var(--font); font-size: var(--fs-base); color: var(--c-ink); background: var(--c-page); -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font); font-size: var(--fs-base); color: var(--c-ink); background: var(--c-surface); -webkit-font-smoothing: antialiased; }
 h1, h2, h3, h4, h5, h6 { color: var(--c-primary); font-weight: 600; letter-spacing: -.01em; margin: 0; }
 h1, h2, h3 { font-size: var(--fs-lg); line-height: 1.25; }
 h4, h5, h6 { font-size: var(--fs-md); }
@@ -78,8 +78,8 @@ code { font-size: 12px; color: var(--c-primary); background: rgba(11, 59, 44, .1
 ::selection { background: var(--c-primary); color: #fff; }
 
 /* ---------- 3. APP SHELL ---------- */
-.app { display: flex; gap: var(--sp-3); padding: var(--sp-3); min-height: 100vh; }
-.app-main { flex: 1; min-width: 0; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); display: flex; flex-direction: column; }
+.app { display: flex; min-height: 100vh; }
+.app-main { flex: 1; min-width: 0; background: var(--c-surface); display: flex; flex-direction: column; }
 .app-header { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-3) var(--sp-5); border-bottom: 1px solid var(--c-border); }
 .app-content { padding: var(--sp-4) var(--sp-5) var(--sp-6); flex: 1; }
 
@@ -93,7 +93,7 @@ code { font-size: 12px; color: var(--c-primary); background: rgba(11, 59, 44, .1
 .page-actions { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
 
 /* ---------- 4. SIDEBAR ---------- */
-.sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: var(--sp-3); height: calc(100vh - 2 * var(--sp-3)); background: var(--c-primary); color: #fff; border-radius: var(--r-lg); display: flex; flex-direction: column; padding: var(--sp-3); }
+.sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 0; align-self: flex-start; height: 100vh; background: var(--c-primary); color: #fff; border-radius: 0; display: flex; flex-direction: column; padding: var(--sp-3); }
 .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 6px 6px var(--sp-3); }
 .brand-mark { width: 40px; height: 40px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
 .brand-mark img { width: 100%; height: 100%; object-fit: contain; object-position: center; }

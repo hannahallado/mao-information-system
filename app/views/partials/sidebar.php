@@ -10,7 +10,7 @@ $shown      = [];
         </span>
         <div>
             <div class="brand-name"><?= e(config('app_name')) ?></div>
-            <div class="brand-sub">Information System</div>
+            <div class="brand-sub">Information Management System</div>
         </div>
     </div>
 
