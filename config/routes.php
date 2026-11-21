@@ -24,15 +24,14 @@ $router->get('/home', 'HomeController@index');
 $router->get('/ui-kit', 'StyleGuideController@index');
 
 // --- 1.0 Register Farmers/Fisherfolk ---
-$router->get('/farmers', 'FarmerController@index');
-$router->get('/farmers/create', 'FarmerController@create');
-$router->get('/farmers/{id}', 'FarmerController@show');
-$router->get('/farmers/{id}/edit', 'FarmerController@edit');
-// TODO (POST routes to add when you implement the forms):
-//   POST /farmers                  -> store (validate, DuplicateProfileService, IdGenerator::farmerId())
-//   POST /farmers/check-duplicate  -> checkDuplicate (JSON for the warning modal; register BEFORE /farmers/{id})
-//   POST /farmers/{id}             -> update
-//   POST /farmers/{id}/archive     -> archive   |  POST /farmers/{id}/restore -> restore
+$router->get('/farmers',                  'FarmerController@index');
+$router->get('/farmers/create',           'FarmerController@create');
+$router->post('/farmers',                 'FarmerController@store');
+$router->post('/farmers/check-duplicate', 'FarmerController@checkDuplicate');   // JSON for the warning modal
+$router->get('/farmers/{id}',             'FarmerController@show');
+$router->get('/farmers/{id}/edit',        'FarmerController@edit');
+$router->post('/farmers/{id}',            'FarmerController@update');
+// TODO: POST /farmers/{id}/archive -> archive  |  POST /farmers/{id}/restore -> restore
 
 // --- 2.0 Record Agricultural Resources ---
 $router->get('/farms', 'FarmController@index');
@@ -73,7 +72,8 @@ $router->get('/programs/{id}/beneficiaries', 'BeneficiaryController@index');
 $router->get('/assistance', 'AssistanceController@index');
 $router->get('/assistance/create', 'AssistanceController@create');
 $router->get('/assistance/history', 'AssistanceController@history');
-$router->get('/farmers/{id}/assistance-history', 'AssistanceController@farmerHistory');
+$router->get('/profiles/{id}/assistance-history', 'AssistanceController@profileHistory');
+$router->get('/farmers/{id}/assistance-history', 'AssistanceController@profileHistory');  // Backward compat
 // TODO (POST routes to add when you implement the forms):
 //   POST /programs                          -> store
 //   POST /programs/{id}                     -> update

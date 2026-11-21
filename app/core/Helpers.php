@@ -73,8 +73,8 @@ function load_old(): void
     if (isset($_SESSION['old'])) {
         $_SESSION['old_now'] = $_SESSION['old'];
         unset($_SESSION['old']);
-    } elseif (!isset($_SESSION['old_now'])) {
-        $_SESSION['old_now'] = [];
+    } else {
+        $_SESSION['old_now'] = [];   // old input lives for ONE page load only
     }
 }
 
@@ -145,6 +145,29 @@ function active_menu_path(array $menu): ?string
         }
     }
     return $best;
+}
+
+/**
+ * Render a partial and return its HTML.
+ *   partial('duplicate-modal')        -> views/partials/duplicate-modal.php
+ *   partial('farmers/_form', [...])   -> views/farmers/_form.php  (names with a slash are relative to views/)
+ */
+function partial(string $name, array $data = []): string
+{
+    extract($data, EXTR_SKIP);
+    ob_start();
+    require APP_PATH . '/views/' . (str_contains($name, '/') ? $name : 'partials/' . $name) . '.php';
+    return (string) ob_get_clean();
+}
+
+/** Current page's query string as array, minus some keys (for pagination / filter links). */
+function query_without(array $drop = []): array
+{
+    $q = $_GET;
+    foreach ($drop as $k) {
+        unset($q[$k]);
+    }
+    return $q;
 }
 
 /** Stop the request with an error page (403, 404, 419, ...). */
