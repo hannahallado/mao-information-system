@@ -1,46 +1,151 @@
 <?php
-/** Process 3.0 Map Farm and Fishery Locations (GIS). Stub: replace each mockup() call with the real view and logic. */
+/** Process 3.0 Map Farm and Fishery Locations (GIS). */
 class MapController extends Controller
 {
     public function index(): void
     {
-        $this->mockup([
-            'title'   => 'Map Overview',
-            'group'   => 'GIS Mapping',
-            'process' => '3.0 Map Farm and Fishery Locations (GIS)',
-            'status'  => 'mockup',
-            'todo'    => [
-                'Leaflet map with farm and fishery markers/boundaries',
-                'Layer toggles and filters (barangay, commodity, category)',
-                'Detail panel linking to the D1 profile and D2 record',
-                'Clear state when coordinates are unavailable',
-            ],
-        ]);
+        $this->renderMap('Map Overview', 'all');
     }
 
     public function farms(): void
     {
-        $this->mockup([
-            'title'   => 'Farm Locations',
-            'group'   => 'GIS Mapping',
-            'process' => '3.0 Map Farm and Fishery Locations (GIS)',
-            'status'  => 'mockup',
-            'todo'    => [
-                'Farm layer preset of the map',
-            ],
-        ]);
+        $this->renderMap('Farm Locations', 'farms');
     }
 
     public function fishery(): void
     {
-        $this->mockup([
-            'title'   => 'Fishery Locations',
-            'group'   => 'GIS Mapping',
-            'process' => '3.0 Map Farm and Fishery Locations (GIS)',
-            'status'  => 'mockup',
-            'todo'    => [
-                'Fishery layer preset of the map',
+        $this->renderMap('Fishery Locations', 'fishery');
+    }
+
+    private function renderMap(string $title, string $preset): void
+    {
+        $this->view('map/index', [
+            'title' => $title,
+            'preset' => $preset,
+            'breadcrumbs' => [
+                ['Home', '/home'],
+                ['GIS Mapping', null],
+                [$title, null],
             ],
+            'features' => $this->mapFeatures(),
         ]);
+    }
+
+    /**
+     * Load only fields the map displays. Table and column names are selected
+     * from fixed allowlists so an absent or unfinished D1/D2 schema is safe.
+     */
+    private function mapFeatures(): array
+    {
+        $tables = [
+            'farms' => ['farms', 'farm_records'],
+            'fishery' => ['fishery_records', 'fisheries', 'fishery'],
+        ];
+        $tableNames = array_merge(...array_values($tables));
+        $db = Database::connect();
+        $placeholders = implode(', ', array_fill(0, count($tableNames), '?'));
+        $stmt = $db->prepare(
+            'SELECT TABLE_NAME, COLUMN_NAME
+             FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN (' . $placeholders . ')'
+        );
+        $stmt->execute(array_merge([config('db.name')], $tableNames));
+
+        $columnsByTable = [];
+        foreach ($stmt->fetchAll() as $column) {
+            $columnsByTable[$column['TABLE_NAME']][$column['COLUMN_NAME']] = true;
+        }
+
+        $features = [];
+        foreach ($tables as $kind => $candidates) {
+            $table = null;
+            foreach ($candidates as $candidate) {
+                if (isset($columnsByTable[$candidate])) {
+                    $table = $candidate;
+                    break;
+                }
+            }
+            if ($table === null) {
+                continue;
+            }
+
+            $fieldOptions = [
+                'id' => ['id', $kind === 'farms' ? 'farm_id' : 'fishery_id'],
+                'name' => ['name', 'farm_name', 'fishery_name', 'site_name', 'record_name'],
+                'barangay' => ['barangay', 'barangay_name', 'location_barangay'],
+                'commodity' => ['commodity', 'commodity_name', 'crop', 'primary_commodity'],
+                'category' => ['category', 'farm_type', 'fishery_type', 'type'],
+                'latitude' => ['latitude', 'lat'],
+                'longitude' => ['longitude', 'lng', 'lon'],
+                'boundary' => ['boundary_geojson', 'boundary', 'geojson'],
+                'farmer_id' => ['farmer_id'],
+            ];
+            $selected = [];
+            foreach ($fieldOptions as $alias => $options) {
+                foreach ($options as $option) {
+                    if (isset($columnsByTable[$table][$option])) {
+                        $selected[$alias] = $option;
+                        break;
+                    }
+                }
+            }
+            if (!isset($selected['id'])) {
+                continue;
+            }
+
+            $select = [];
+            foreach ($selected as $alias => $column) {
+                $select[] = '`' . $column . '` AS `' . $alias . '`';
+            }
+            $where = isset($columnsByTable[$table]['deleted_at']) ? ' WHERE `deleted_at` IS NULL' : '';
+            $records = $db->query(
+                'SELECT ' . implode(', ', $select) . ' FROM `' . $table . '`' . $where
+            )->fetchAll();
+
+            foreach ($records as $record) {
+                $id = (string) $record['id'];
+                $farmerId = $record['farmer_id'] ?? null;
+                $features[] = [
+                    'id' => $id,
+                    'kind' => $kind,
+                    'label' => trim((string) ($record['name'] ?? '')) ?: ucfirst($kind) . ' ' . $id,
+                    'barangay' => trim((string) ($record['barangay'] ?? '')) ?: 'Not specified',
+                    'commodity' => trim((string) ($record['commodity'] ?? '')) ?: 'Not specified',
+                    'category' => trim((string) ($record['category'] ?? '')) ?: ucfirst($kind),
+                    'latitude' => $this->coordinate($record['latitude'] ?? null, -90, 90),
+                    'longitude' => $this->coordinate($record['longitude'] ?? null, -180, 180),
+                    'boundary' => $this->geoJson($record['boundary'] ?? null),
+                    'recordUrl' => url(($kind === 'farms' ? 'farms/' : 'fishery/') . rawurlencode($id)),
+                    'profileUrl' => $farmerId !== null && $farmerId !== ''
+                        ? url('farmers/' . rawurlencode((string) $farmerId))
+                        : null,
+                ];
+            }
+        }
+        return $features;
+    }
+
+    private function coordinate(mixed $value, float $min, float $max): ?float
+    {
+        if (!is_numeric($value)) {
+            return null;
+        }
+        $coordinate = (float) $value;
+        return is_finite($coordinate) && $coordinate >= $min && $coordinate <= $max
+            ? $coordinate
+            : null;
+    }
+
+    private function geoJson(mixed $value): ?array
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+        $geometry = json_decode($value, true);
+        $supportedTypes = ['Feature', 'FeatureCollection', 'Point', 'LineString', 'MultiPoint',
+            'MultiLineString', 'Polygon', 'MultiPolygon', 'GeometryCollection'];
+        return is_array($geometry) && in_array($geometry['type'] ?? null, $supportedTypes, true)
+            ? $geometry
+            : null;
     }
 }

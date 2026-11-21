@@ -10,6 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap (grid + modal/collapse JS). Copy to public/assets/vendor for offline demos. -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <?php if (in_array($title ?? '', ['Map Overview', 'Farm Locations', 'Fishery Locations'], true)): ?>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <?php endif; ?>
     <link href="<?= asset('css/style.css') ?>" rel="stylesheet">
 </head>
 <body>
