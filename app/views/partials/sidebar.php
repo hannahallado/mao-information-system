@@ -25,7 +25,7 @@ $shown      = [];
 
             <?php if ($entry['type'] === 'link'): ?>
                 <a href="<?= url($entry['path']) ?>" class="nav-link-item <?= $activePath === $entry['path'] ? 'active' : '' ?>">
-                    <span class="nav-icon"></span>
+                    <span class="nav-icon"><i class="bi bi-<?= e($entry['icon'] ?? 'circle') ?>" aria-hidden="true"></i></span>
                     <?= e($entry['label']) ?>
                 </a>
                 <?php continue; ?>
@@ -35,14 +35,17 @@ $shown      = [];
             <button class="nav-group-toggle <?= $open ? 'has-active' : '' ?>" type="button"
                     data-bs-toggle="collapse" data-bs-target="#grp-<?= e($entry['id']) ?>"
                     aria-expanded="<?= $open ? 'true' : 'false' ?>">
-                <span class="nav-icon"></span>
+                <span class="nav-icon"><i class="bi bi-<?= e($entry['icon'] ?? 'circle') ?>" aria-hidden="true"></i></span>
                 <span class="nav-text"><?= e($entry['label']) ?></span>
                 <span class="nav-chevron"></span>
             </button>
             <div class="collapse <?= $open ? 'show' : '' ?>" id="grp-<?= e($entry['id']) ?>">
                 <div class="nav-sub">
-                    <?php foreach ($entry['items'] as [$label, $path]): ?>
-                        <a href="<?= url($path) ?>" class="nav-link-item <?= $activePath === $path ? 'active' : '' ?>"><?= e($label) ?></a>
+                    <?php foreach ($entry['items'] as [$label, $path, $icon]): ?>
+                        <a href="<?= url($path) ?>" class="nav-link-item <?= $activePath === $path ? 'active' : '' ?>">
+                            <span class="nav-sub-icon"><i class="bi bi-<?= e($icon ?? 'circle') ?>" aria-hidden="true"></i></span>
+                            <?= e($label) ?>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             </div>
