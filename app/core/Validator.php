@@ -11,7 +11,8 @@
  *   if ($v->fails()) { ... $v->errors() ... }
  *   $clean = $v->validated();   // trimmed values, '' => null
  *
- * Rules: required, nullable, max:n, min:n, numeric, integer, date, email, in:a,b,c, unique:table,column[,ignoreId]
+ * Rules: required, nullable, max:n, min:n, numeric, integer, date, not_future, phone, email, in:a,b,c,
+ *        unique:table,column[,ignoreId], exists:table,column
  */
 class Validator
 {
@@ -95,6 +96,22 @@ class Validator
                 $d = DateTime::createFromFormat('Y-m-d', $value);
                 if (!$d || $d->format('Y-m-d') !== $value) {
                     $this->fail($field, "$label must be a valid date (YYYY-MM-DD).");
+                }
+                break;
+            case 'not_future':
+                if ($value > date('Y-m-d')) {
+                    $this->fail($field, "$label cannot be in the future.");
+                }
+                break;
+            case 'phone':
+                if (!preg_match('/^[0-9+\-\s()]{7,20}$/', $value)) {
+                    $this->fail($field, "$label must be a valid contact number.");
+                }
+                break;
+            case 'exists':
+                [$table, $column] = array_pad(explode(',', (string) $arg), 2, 'id');
+                if (!$this->exists($table, $column, $value, null)) {
+                    $this->fail($field, "$label has an invalid selection.");
                 }
                 break;
             case 'email':
